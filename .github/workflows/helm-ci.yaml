@@ -41,10 +41,11 @@ jobs:
           ls -al homeassistant || true
           ls -al network-ups-tools || true
           ls -al zigbee2mqtt || true
+          ls -al teamspeak || true
 
       - name: Run chart-testing (lint)
         run: |
-          ct lint --charts homeassistant,network-ups-tools,zigbee2mqtt --chart-dirs . --debug
+          ct lint --charts homeassistant,network-ups-tools,zigbee2mqtt,teamspeak --chart-dirs . --debug
 
   build-and-push:
     name: Build and Push Helm Charts
@@ -77,6 +78,7 @@ jobs:
           helm package -u -d dist/ homeassistant
           helm package -u -d dist/ zigbee2mqtt
           helm package -u -d dist/ network-ups-tools
+          helm package -u -d dist/ teamspeak
 
       - name: List packaged charts
         run: ls -al dist/
@@ -85,17 +87,21 @@ jobs:
         run: |
           # Convertir le nom du repo en minuscules pour GHCR
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          
+
           # Push homeassistant
           CHART_FILE=$(ls dist/homeassistant-*.tgz | head -n 1)
           helm push "$CHART_FILE" oci://ghcr.io/${REPO_OWNER}/charts
-          
+
           # Push zigbee2mqtt
           CHART_FILE=$(ls dist/zigbee2mqtt-*.tgz | head -n 1)
           helm push "$CHART_FILE" oci://ghcr.io/${REPO_OWNER}/charts
-          
+
           # Push network-ups-tools
           CHART_FILE=$(ls dist/network-ups-tools-*.tgz | head -n 1)
+          helm push "$CHART_FILE" oci://ghcr.io/${REPO_OWNER}/charts
+
+          # Push teamspeak
+          CHART_FILE=$(ls dist/teamspeak-*.tgz | head -n 1)
           helm push "$CHART_FILE" oci://ghcr.io/${REPO_OWNER}/charts
 
       - name: Logout from registries

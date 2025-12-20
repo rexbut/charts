@@ -100,7 +100,7 @@ helm uninstall network-ups-tools --namespace network-ups-tools
 pip install yamllint yamale
 
 # Lint all charts
-ct lint --charts homeassistant,network-ups-tools,zigbee2mqtt --chart-dirs . --debug
+ct lint --charts teamspeak --chart-dirs . --debug
 ```
 
 ### Build and test locally

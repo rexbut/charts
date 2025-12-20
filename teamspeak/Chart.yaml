@@ -1,0 +1,31 @@
+apiVersion: v2
+name: teamspeak
+description: |
+  TeamSpeak 3 is a proprietary voice-over-Internet Protocol (VoIP) application
+  for audio communication between users on a chat channel.
+type: application
+version: 0.1.2
+# renovate: image=ghcr.io/rexbut/teamspeak
+appVersion: "3.13.7"
+icon: https://teamspeak.com/user/themes/flavor/images/logo_inverse.svg
+maintainers:
+  - name: rexbut
+    email: remi.butet@evercraft.fr
+keywords:
+  - teamspeak
+  - voip
+  - voice
+  - gaming
+  - communication
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release of TeamSpeak 3 ARM64 chart
+  artifacthub.io/images: |
+    - name: teamspeak
+      image: ghcr.io/rexbut/teamspeak
+  artifacthub.io/links: |
+    - name: TeamSpeak official
+      url: https://teamspeak.com
+    - name: Docker image source
+      url: https://github.com/rexbut/
