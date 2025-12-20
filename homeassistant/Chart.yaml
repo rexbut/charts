@@ -1,0 +1,29 @@
+apiVersion: v2
+name: homeassistant
+description: |
+  HomeAssistant is an open source home automation that puts local control and privacy first.
+  Powered by a worldwide community of tinkerers and DIY enthusiasts.
+type: application
+version: 0.5.2
+# renovate: image=homeassistant/home-assistant
+appVersion: "2023.4.6"
+icon: https://github.com/home-assistant/assets/blob/master/logo/logo-pretty.png?raw=true
+maintainers:
+  - name: rexbut
+    email: remi.butet@evercraft.fr
+keywords:
+  - homeassistant
+  - home-assistant
+  - smart home
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: bump home assistant version to 2023.4.5
+  artifacthub.io/images: |
+    - name: home-assistant
+      image: homeassistant/home-assistant
+  artifacthub.io/links: |
+    - name: Home assistant source repo
+      url: https://github.com/home-assistant
+    - name: Helm Repo
+      url: https://gitlab.com/alexander-chernov/helm/home-assistant

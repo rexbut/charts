@@ -1,0 +1,193 @@
+# Default values for zigbee2mqtt.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+debug:
+  initContainer:
+    enabled: false
+  container:
+    enabled: false
+
+replicaCount: 1
+
+image:
+  repository: koenkk/zigbee2mqtt
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  privileged: true
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# -- Enables host networking (so that home assistant can scan devices automatically on the same network). If set to false, you might want to amend dnsPolicy value as well
+hostNetwork: true
+
+# -- Dns policy
+dnsPolicy: ClusterFirstWithHostNet
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# -- Strategy used to replace old Pods by new ones
+strategy:
+  type: Recreate
+  # type: RollingUpdate
+  # rollingUpdate:
+  #   maxSurge: 1
+  #   maxUnavailable: 33%
+
+persistence:
+  storageClass: ""
+  existingClaim: ""
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 2Gi
+  # if you need any additional volumes, you can define them here
+  additionalVolumes: []
+  # if you need any additional volume mounts, you can define them here
+  additionalMounts: []
+
+usb:
+  enabled: true
+  hostPath: /dev/ttyUSB0
+
+# -- environment variables. See [image docs](https://www.zigbee2mqtt.io/information/configuration.html#override-via-environment-variables) for more details.
+# @default -- See below
+env:
+  # -- Set the data folder for Zigbee2MQTT.
+  - name: ZIGBEE2MQTT_DATA
+    value: /app/data
+
+# -- zigbee2mqtt configuration settings.
+# This will be copied into the container's persistent storage at first run only.
+# Further configuration should be done in the application itself!
+# See [project documentation](https://www.zigbee2mqtt.io/information/configuration.html) for more information.
+# @default -- See values.yaml
+config:
+  # These will be applied ONLY on first run
+  # Home Assistant integration (MQTT discovery)
+  homeassistant: false
+
+  # allow new devices to join
+  # WARNING: Disable this after all devices have been paired! (default: false)
+  # Note: this will be controllable in the UI
+  permit_join: true
+
+  # MQTT settings
+  mqtt:
+    # MQTT base topic for zigbee2mqtt MQTT messages
+    base_topic: zigbee2mqtt
+    # MQTT server URL
+    server: "mqtt://localhost"
+    # MQTT server authentication, uncomment if required:
+    # user: my_user
+    # password: my_password
+    # client_id: my_id
+    # Alternatively, credentials may be put into a separate file, managed through a secret:
+    # password: '!secret password'
+
+    # Optional: Include device information to mqtt messages (default: false)
+    include_device_information: true
+
+  # USB / Serial settings
+  serial:
+    port: /dev/ttyUSB1
+    # Location of your zigbee device
+    # port: /dev/serial/by-id/usb-dresden_elektronik_ingenieurtechnik_GmbH_ConBee_II_DE2400981-if00
+
+    # Optional: adapter type, not needed unless you are experiencing problems (options: zstack, deconz)
+    # adapter: deconz
+
+  advanced:
+    network_key: GENERATE
+    log_output:
+      - console
+    log_level: info
+
+    # Optional: ZigBee channel, changing requires re-pairing of all devices. (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)
+    # default: 11
+    # channel: 11
+
+    # Optional: Baudrate for serial port (default: 115200 for Z-Stack, 38400 for Deconz)
+    # baudrate: 38400
+
+    # Optional: RTS / CTS Hardware Flow Control for serial port (default: false)
+    # rtscts: true
+
+    # Optional: Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message
+    # possible values are: disable (default), ISO_8601, ISO_8601_local, epoch (default: disable)
+    last_seen: 'ISO_8601'
+
+    homeassistant_discovery_topic: 'homeassistant'
+    homeassistant_status_topic: 'homeassistant/status'
+
+    # Optional: Enables report feature (see information -> report for more details) (default: false)
+    # report: true
+
+    # Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg (default: false)
+    # elapsed: true
+
+  # Both of these need to be enabled for the webui
+  frontend:
+    port: 8080
+  experimental:
+    new_api: true

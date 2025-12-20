@@ -1,0 +1,16 @@
+apiVersion: v2
+name: network-ups-tools
+description: |
+  Network UPS Tools (NUT) is a client/server monitoring system that permits monitoring of UPS hardware
+type: application
+version: 0.1.5
+appVersion: "1.0.0"
+icon: https://avatars.githubusercontent.com/u/3526263?s=200&v=4&raw=true
+maintainers:
+  - name: rexbut
+    email: remi.butet@evercraft.fr
+keywords:
+  - ups
+  - network-ups-tools
+  - nut
+  - monitoring

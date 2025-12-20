@@ -1,0 +1,17 @@
+apiVersion: v2
+name: zigbee2mqtt
+description: |
+  Zigbee2MQTT allows you to use your Zigbee devices without the vendor's bridge or gateway
+type: application
+version: 0.1.12
+appVersion: "1.30.4"
+icon: https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/raw/master/zigbee2mqtt/logo.png?raw=true
+maintainers:
+  - name: rexbut
+    email: remi.butet@evercraft.fr
+keywords:
+  - zigbee
+  - zigbee2mqtt
+  - mqtt
+  - iot
+  - smart-home
