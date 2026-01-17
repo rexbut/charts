@@ -1,0 +1,20 @@
+# Set default behavior to automatically normalize line endings
+* text=auto eol=lf
+
+# Ensure shell scripts use LF
+*.sh text eol=lf
+
+# Ensure YAML files use LF
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Ensure template files use LF
+*.tpl text eol=lf
+
+# Ensure Markdown uses LF
+*.md text eol=lf
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.ico binary
