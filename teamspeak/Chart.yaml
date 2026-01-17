@@ -4,7 +4,7 @@ description: |
   TeamSpeak 3 is a proprietary voice-over-Internet Protocol (VoIP) application
   for audio communication between users on a chat channel.
 type: application
-version: 0.1.2
+version: 0.1.3
 # renovate: image=ghcr.io/rexbut/teamspeak
 appVersion: "3.13.7"
 icon: https://teamspeak.com/user/themes/flavor/images/logo_inverse.svg
