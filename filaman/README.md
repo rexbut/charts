@@ -138,10 +138,12 @@ Le chart ne migre pas les données. Exportez vos données depuis l'UI FilaMan (s
 | `service.type` | Type de service | `ClusterIP` |
 | `service.port` | Port du service | `8000` |
 | `ingress.enabled` | Activer l'Ingress | `false` |
-| `persistence.enabled` | Volume persistant sur `/app/data` | `true` |
+| `persistence.enabled` | Volume persistant sur `/app/data` (volumeClaimTemplates) | `true` |
 | `persistence.storageClass` | StorageClass | `""` |
 | `persistence.size` | Taille du volume | `1Gi` |
-| `persistence.existingClaim` | PVC existant | `""` |
+| `persistence.existingClaim` | PVC existant (remplace volumeClaimTemplates) | `""` |
+| `persistence.annotations` | Annotations du PVC | `{}` |
+| `updateStrategy` | Stratégie de mise à jour du StatefulSet | `RollingUpdate` |
 | `resources` | Ressources du conteneur | requests 100m/256Mi, limit 512Mi |
 
 ## Opérations
@@ -158,8 +160,31 @@ Logs :
 kubectl logs -n filaman deploy/filaman -f
 ```
 
+## StatefulSet et volume
+
+FilaMan tourne en **StatefulSet** : un seul pod `filaman-0` à la fois, un Service headless `filaman-headless`, et un PVC `data-filaman-0` créé par `volumeClaimTemplates`.
+
+- Le PVC **n'est pas supprimé** par `helm uninstall` ni par la suppression de l'Application ArgoCD. Supprimez-le à la main si besoin : `kubectl delete pvc -n filaman data-filaman-0`.
+- `storageClass`, `accessMode` et `size` **ne sont plus modifiables** après la première installation. Pour agrandir le volume (StorageClass avec `allowVolumeExpansion`, comme Longhorn) :
+
+  ```bash
+  kubectl patch pvc -n filaman data-filaman-0 -p '{"spec":{"resources":{"requests":{"storage":"2Gi"}}}}'
+  kubectl delete statefulset -n filaman filaman --cascade=orphan
+  # puis mettre persistence.size: 2Gi dans les values et resynchroniser
+  ```
+
+- Si un nœud tombe, le pod peut rester en `Terminating`. Kubernetes ne le recrée pas ailleurs tant qu'il n'est pas sûr que l'ancien est arrêté. Forcez-le seulement si le nœud est vraiment hors service : `kubectl delete pod -n filaman filaman-0 --force --grace-period=0`.
+
+### Mise à jour depuis 0.1.x (Deployment)
+
+La 0.1.x utilisait un Deployment et un PVC `filaman`. En 0.2.0, ils sont remplacés par le StatefulSet et le PVC `data-filaman-0`. Les données ne sont **pas** reprises.
+
+- **ArgoCD** : synchronisez avec **Prune** pour supprimer l'ancien Deployment et l'ancien PVC. Sinon, les deux pods tournent en parallèle.
+- **Helm** : `helm upgrade` supprime l'ancien Deployment et l'ancien PVC.
+- Pour garder les données de la 0.1.x, mettez `persistence.existingClaim: filaman` (et ne prunez pas le PVC).
+
 ## Notes
 
-- Gardez `replicaCount: 1` et `strategy: Recreate` avec SQLite et un volume ReadWriteOnce.
+- Gardez `replicaCount: 1` avec SQLite et un volume ReadWriteOnce.
 - L'image tourne en root (pas de `USER` dans le Dockerfile).
 - Changer `secretKey` déconnecte tous les utilisateurs.

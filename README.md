@@ -7,7 +7,7 @@ Collection of Helm charts for the EverHome project, including Home Assistant, Zi
 - **homeassistant** (v0.5.2) - Open source home automation platform
 - **zigbee2mqtt** (v0.1.12) - Zigbee to MQTT bridge
 - **network-ups-tools** (v0.1.5) - Network UPS management
-- **filaman** (v0.1.0) - 3D printing filament management
+- **filaman** (v0.2.0) - 3D printing filament management
 
 ## 🚀 Installation
 
@@ -26,7 +26,10 @@ helm install zigbee2mqtt oci://ghcr.io/rexbut/charts/zigbee2mqtt --version 0.1.1
 helm install network-ups-tools oci://ghcr.io/rexbut/charts/network-ups-tools --version 0.1.5
 
 # FilaMan (secret keys are required)
-helm install filaman oci://ghcr.io/rexbut/charts/filaman --version 0.1.0 \n  --namespace filaman --create-namespace \n  --set filaman.secretKey=$(openssl rand -hex 32) \n  --set filaman.csrfSecretKey=$(openssl rand -hex 32)
+helm install filaman oci://ghcr.io/rexbut/charts/filaman --version 0.2.0 \
+  --namespace filaman --create-namespace \
+  --set filaman.secretKey=$(openssl rand -hex 32) \
+  --set filaman.csrfSecretKey=$(openssl rand -hex 32)
 ```
 
 #### Installation with custom values
@@ -55,7 +58,7 @@ helm registry login harbor.evercraft.fr --username <username>
 helm install homeassistant oci://harbor.evercraft.fr/registry/homeassistant --version 0.5.2
 helm install zigbee2mqtt oci://harbor.evercraft.fr/registry/zigbee2mqtt --version 0.1.12
 helm install network-ups-tools oci://harbor.evercraft.fr/registry/network-ups-tools --version 0.1.5
-helm install filaman oci://harbor.evercraft.fr/registry/filaman --version 0.1.0
+helm install filaman oci://harbor.evercraft.fr/registry/filaman --version 0.2.0
 ```
 
 ## 🔍 List Available Versions

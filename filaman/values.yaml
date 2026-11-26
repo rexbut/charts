@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 # -- Keep 1 replica: SQLite and the ReadWriteOnce volume do not support more.
+# FilaMan runs as a StatefulSet: at most one pod at a time, one volume per pod.
 replicaCount: 1
 
 image:
@@ -157,16 +158,21 @@ tolerations: []
 
 affinity: {}
 
-# -- Recreate is required with a ReadWriteOnce volume
-strategy:
-  type: Recreate
+# -- StatefulSet update strategy (with 1 replica, the pod is stopped before the new one starts)
+updateStrategy:
+  type: RollingUpdate
 
+# -- Volume mounted on /app/data, created by volumeClaimTemplates (PVC data-<release>-0).
+# storageClass, accessMode and size cannot be changed after the first install (StatefulSet limitation).
 persistence:
   storageClass: ""
+  # -- Use an existing PVC instead of volumeClaimTemplates
   existingClaim: ""
   enabled: true
   accessMode: ReadWriteOnce
   size: 1Gi
+  # -- Annotations added to the PVC
+  annotations: {}
   # if you need any additional volumes, you can define them here
   additionalVolumes: []
   # if you need any additional volume mounts, you can define them here
