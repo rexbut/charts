@@ -4,7 +4,7 @@ description: |
   FilaMan is a self-hosted filament management system for 3D printing:
   spools, materials, printers and stock, with optional printer integrations.
 type: application
-version: 0.2.0
+version: 0.2.1
 # renovate: image=ghcr.io/fire-devils/filaman-system
 appVersion: "v2.9.1"
 maintainers:
@@ -18,8 +18,8 @@ keywords:
   - inventory
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: Run FilaMan as a StatefulSet with volumeClaimTemplates (PVC data-<release>-0) and a headless Service
+    - kind: fixed
+      description: Raise default memory (request 512Mi, limit 1536Mi) to avoid worker OOM kills during imports
   artifacthub.io/images: |
     - name: filaman-system
       image: ghcr.io/fire-devils/filaman-system:v2.9.1

@@ -121,12 +121,13 @@ ingress:
   #    hosts:
   #      - filaman.local
 
+# ~450Mi at rest with 2 workers; imports (FilamentDB…) need much more.
 resources:
   requests:
     cpu: 100m
-    memory: 256Mi
-  limits:
     memory: 512Mi
+  limits:
+    memory: 1536Mi
 
 # -- Startup probe: gives time to database migrations on first start
 startupProbe:

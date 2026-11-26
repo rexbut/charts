@@ -144,7 +144,7 @@ Le chart ne migre pas les données. Exportez vos données depuis l'UI FilaMan (s
 | `persistence.existingClaim` | PVC existant (remplace volumeClaimTemplates) | `""` |
 | `persistence.annotations` | Annotations du PVC | `{}` |
 | `updateStrategy` | Stratégie de mise à jour du StatefulSet | `RollingUpdate` |
-| `resources` | Ressources du conteneur | requests 100m/256Mi, limit 512Mi |
+| `resources` | Ressources du conteneur | requests 100m/512Mi, limit 1536Mi |
 
 ## Opérations
 
@@ -186,5 +186,6 @@ La 0.1.x utilisait un Deployment et un PVC `filaman`. En 0.2.0, ils sont remplac
 ## Notes
 
 - Gardez `replicaCount: 1` avec SQLite et un volume ReadWriteOnce.
+- Mémoire : environ 450Mi au repos avec 2 workers, avec de gros pics pendant les imports (FilamentDB…). Un message `Worker … was sent SIGKILL! Perhaps out of memory?` dans les logs veut dire que la limite est trop basse : augmentez `resources.limits.memory` ou passez `filaman.webConcurrency` à 1.
 - L'image tourne en root (pas de `USER` dans le Dockerfile).
 - Changer `secretKey` déconnecte tous les utilisateurs.
