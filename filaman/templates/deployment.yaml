@@ -1,0 +1,191 @@
+{{- include "filaman.validate" . }}
+{{- $db := .Values.database }}
+{{- $secretName := include "filaman.secretName" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "filaman.fullname" . }}
+  labels:
+    {{- include "filaman.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "filaman.selectorLabels" . | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "filaman.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "filaman.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "filaman.fullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- with .Values.persistence.additionalVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            # --- Application secrets
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: secret-key
+            - name: CSRF_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: csrf-secret-key
+            {{- if or .Values.filaman.existingSecret .Values.filaman.oidcEncKey }}
+            - name: OIDC_ENC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: oidc-enc-key
+                  optional: true
+            {{- end }}
+            # --- Database
+            {{- if eq $db.type "postgresql" }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "filaman.postgresql.secretName" . }}
+                  key: {{ include "filaman.postgresql.usernameKey" . }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "filaman.postgresql.secretName" . }}
+                  key: {{ include "filaman.postgresql.passwordKey" . }}
+            - name: DATABASE_URL
+              value: {{ printf "postgresql+asyncpg://$(DB_USER):$(DB_PASSWORD)@%s:%v/%s%s" $db.postgresql.host $db.postgresql.port $db.postgresql.database (ternary (printf "?%s" $db.postgresql.params) "" (ne $db.postgresql.params "")) | quote }}
+            {{- else if eq $db.type "external" }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "filaman.external.secretName" . }}
+                  key: {{ include "filaman.external.urlKey" . }}
+            {{- else }}
+            - name: DATABASE_URL
+              value: {{ printf "sqlite+aiosqlite:///%s" $db.sqlite.path | quote }}
+            {{- end }}
+            # --- Admin bootstrap
+            {{- with .Values.filaman.admin }}
+            {{- if .email }}
+            - name: ADMIN_EMAIL
+              value: {{ .email | quote }}
+            - name: ADMIN_DISPLAY_NAME
+              value: {{ .displayName | quote }}
+            - name: ADMIN_LANGUAGE
+              value: {{ .language | quote }}
+            - name: ADMIN_SUPERADMIN
+              value: {{ .superadmin | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if or .Values.filaman.existingSecret .Values.filaman.admin.password }}
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: admin-password
+                  optional: true
+            {{- end }}
+            # --- Application settings
+            {{- with .Values.filaman.publicUrl }}
+            - name: PUBLIC_URL
+              value: {{ . | quote }}
+            {{- end }}
+            - name: CORS_ORIGINS
+              value: {{ .Values.filaman.corsOrigins | quote }}
+            - name: WEB_CONCURRENCY
+              value: {{ .Values.filaman.webConcurrency | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.filaman.logLevel | quote }}
+            - name: LOG_FORMAT
+              value: {{ .Values.filaman.logFormat | quote }}
+            - name: DEBUG
+              value: {{ .Values.filaman.debug | quote }}
+            {{- with .Values.filaman.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - mountPath: /app/data
+              name: data
+            {{- with .Values.persistence.additionalMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,15 @@
+# Values used by chart-testing (ct lint). Test keys only, never use them in production.
+filaman:
+  secretKey: ci-test-secret-key
+  csrfSecretKey: ci-test-csrf-secret-key
+  admin:
+    email: admin@example.com
+    password: ci-test-password
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: filaman.example.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific

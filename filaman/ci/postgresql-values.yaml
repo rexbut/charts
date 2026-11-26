@@ -1,0 +1,11 @@
+# Values used by chart-testing (ct lint): PostgreSQL with a CloudNativePG Secret.
+filaman:
+  existingSecret: filaman-keys
+database:
+  type: postgresql
+  postgresql:
+    host: pg-cluster-rw.postgresql.svc.cluster.local
+    database: filaman
+    existingSecret: pg-cluster-app
+persistence:
+  enabled: false

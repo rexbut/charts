@@ -1,12 +1,13 @@
 # EverHome Helm Charts
 
-Collection of Helm charts for the EverHome project, including Home Assistant, Zigbee2MQTT, and Network UPS Tools.
+Collection of Helm charts for the EverHome project, including Home Assistant, Zigbee2MQTT, Network UPS Tools and FilaMan.
 
 ## 📦 Available Charts
 
 - **homeassistant** (v0.5.2) - Open source home automation platform
 - **zigbee2mqtt** (v0.1.12) - Zigbee to MQTT bridge
 - **network-ups-tools** (v0.1.5) - Network UPS management
+- **filaman** (v0.1.0) - 3D printing filament management
 
 ## 🚀 Installation
 
@@ -23,6 +24,9 @@ helm install zigbee2mqtt oci://ghcr.io/rexbut/charts/zigbee2mqtt --version 0.1.1
 
 # Network UPS Tools
 helm install network-ups-tools oci://ghcr.io/rexbut/charts/network-ups-tools --version 0.1.5
+
+# FilaMan (secret keys are required)
+helm install filaman oci://ghcr.io/rexbut/charts/filaman --version 0.1.0 \n  --namespace filaman --create-namespace \n  --set filaman.secretKey=$(openssl rand -hex 32) \n  --set filaman.csrfSecretKey=$(openssl rand -hex 32)
 ```
 
 #### Installation with custom values
@@ -51,6 +55,7 @@ helm registry login harbor.evercraft.fr --username <username>
 helm install homeassistant oci://harbor.evercraft.fr/registry/homeassistant --version 0.5.2
 helm install zigbee2mqtt oci://harbor.evercraft.fr/registry/zigbee2mqtt --version 0.1.12
 helm install network-ups-tools oci://harbor.evercraft.fr/registry/network-ups-tools --version 0.1.5
+helm install filaman oci://harbor.evercraft.fr/registry/filaman --version 0.1.0
 ```
 
 ## 🔍 List Available Versions
@@ -89,6 +94,7 @@ helm upgrade homeassistant oci://ghcr.io/rexbut/charts/homeassistant \
 helm uninstall homeassistant --namespace homeassistant
 helm uninstall zigbee2mqtt --namespace zigbee2mqtt
 helm uninstall network-ups-tools --namespace network-ups-tools
+helm uninstall filaman --namespace filaman
 ```
 
 ## 🛠️ Development
@@ -132,6 +138,7 @@ The workflow is triggered automatically on pushes to `main` or `master`.
 - [Home Assistant](./homeassistant/README.md)
 - [Zigbee2MQTT](./zigbee2mqtt/README.md)
 - [Network UPS Tools](./network-ups-tools/README.md)
+- [FilaMan](./filaman/README.md)
 
 ## 🔗 Useful Links
 
@@ -140,3 +147,4 @@ The workflow is triggered automatically on pushes to `main` or `master`.
 - [Home Assistant](https://www.home-assistant.io/)
 - [Zigbee2MQTT](https://www.zigbee2mqtt.io/)
 - [Network UPS Tools](https://networkupstools.org/)
+- [FilaMan](https://github.com/Fire-Devils/filaman-system)

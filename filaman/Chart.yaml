@@ -1,0 +1,28 @@
+apiVersion: v2
+name: filaman
+description: |
+  FilaMan is a self-hosted filament management system for 3D printing:
+  spools, materials, printers and stock, with optional printer integrations.
+type: application
+version: 0.1.0
+# renovate: image=ghcr.io/fire-devils/filaman-system
+appVersion: "v2.9.1"
+maintainers:
+  - name: rexbut
+    email: remi.butet@evercraft.fr
+keywords:
+  - filaman
+  - filament
+  - 3d-printing
+  - spool
+  - inventory
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release of FilaMan chart (SQLite, PostgreSQL or external database)
+  artifacthub.io/images: |
+    - name: filaman-system
+      image: ghcr.io/fire-devils/filaman-system:v2.9.1
+  artifacthub.io/links: |
+    - name: FilaMan source repo
+      url: https://github.com/Fire-Devils/filaman-system

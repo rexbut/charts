@@ -1,0 +1,8 @@
+# Values used by chart-testing (ct lint): external database URL.
+filaman:
+  secretKey: ci-test-secret-key
+  csrfSecretKey: ci-test-csrf-secret-key
+database:
+  type: external
+  external:
+    url: mysql+aiomysql://filaman:ci-test@mysql:3306/filaman

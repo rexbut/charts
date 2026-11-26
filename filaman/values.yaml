@@ -1,0 +1,173 @@
+# Default values for filaman.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Keep 1 replica: SQLite and the ReadWriteOnce volume do not support more.
+replicaCount: 1
+
+image:
+  repository: ghcr.io/fire-devils/filaman-system
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# -- FilaMan application configuration
+filaman:
+  # -- Secret key used to sign sessions (required, e.g. `openssl rand -hex 32`)
+  secretKey: ""
+  # -- Secret key used for CSRF tokens (required, e.g. `openssl rand -hex 32`)
+  csrfSecretKey: ""
+  # -- Key used to encrypt the OIDC client secret in the database (only for OIDC SSO)
+  oidcEncKey: ""
+  # -- Use an existing Secret instead of the values above.
+  # Expected keys: secret-key, csrf-secret-key, admin-password (optional), oidc-enc-key (optional)
+  existingSecret: ""
+
+  # -- Admin account created at first start (optional)
+  admin:
+    email: ""
+    # -- Change it after the first login
+    password: ""
+    displayName: Admin
+    language: en
+    superadmin: true
+
+  # -- Public URL of the web UI (e.g. https://filaman.example.com). Empty disables web_url in API responses.
+  publicUrl: ""
+  # -- Allowed CORS origins
+  corsOrigins: "*"
+  # -- Number of Gunicorn workers (~90 MB each). Keep it low on ARM boards.
+  webConcurrency: 2
+  # -- DEBUG, INFO, WARNING, ERROR
+  logLevel: INFO
+  # -- text or json
+  logFormat: text
+  debug: false
+  # -- Extra environment variables
+  extraEnv: []
+  #   - name: MCP_PLUGIN_READ_TOOLS
+  #     value: ""
+
+# -- Database configuration
+database:
+  # -- sqlite, postgresql or external
+  type: sqlite
+
+  sqlite:
+    # -- Path of the SQLite file, inside the persistent volume
+    path: /app/data/filaman.db
+
+  postgresql:
+    # -- PostgreSQL host (e.g. my-cluster-rw.postgresql.svc.cluster.local)
+    host: ""
+    port: 5432
+    database: filaman
+    # -- Used only when existingSecret is empty
+    username: ""
+    # -- Used only when existingSecret is empty. Must not contain URL special characters.
+    password: ""
+    # -- Existing Secret holding the credentials (e.g. the `<cluster>-app` Secret created by CloudNativePG)
+    existingSecret: ""
+    usernameKey: username
+    passwordKey: password
+    # -- Extra URL query parameters (e.g. "ssl=require")
+    params: ""
+
+  external:
+    # -- Full SQLAlchemy URL (e.g. mysql+aiomysql://user:pass@host:3306/filaman). Used only when existingSecret is empty.
+    url: ""
+    # -- Existing Secret holding the full URL
+    existingSecret: ""
+    urlKey: database-url
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+# The image runs as root (no USER in the Dockerfile)
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  # kubernetes.io/ingress.class: traefik
+  hosts:
+    - host: filaman.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: filaman-tls
+  #    hosts:
+  #      - filaman.local
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+# -- Startup probe: gives time to database migrations on first start
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+# -- Liveness probe configuration
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 0
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# -- Readiness probe configuration
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# -- Recreate is required with a ReadWriteOnce volume
+strategy:
+  type: Recreate
+
+persistence:
+  storageClass: ""
+  existingClaim: ""
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  # if you need any additional volumes, you can define them here
+  additionalVolumes: []
+  # if you need any additional volume mounts, you can define them here
+  additionalMounts: []
